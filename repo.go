@@ -1,7 +1,11 @@
 // Mock Database for Tutorial
 package main 
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/nu7hatch/gouuid"
+)
 
 var entries Entries
 
@@ -19,9 +23,15 @@ func RepoFindEntry(id string) Entry {
 	return Entry{} // return empty Todo
 }
 
-func RepoCreateEntry(t Entry) Entry {
-	entries = append(entries, t)
-	return t
+func RepoCreateEntry(entry Entry) Entry {
+
+	id, err := uuid.NewV4()
+	if err != nil {
+		panic(err)
+	}
+	entry.Id = id.String()
+	entries = append(entries, entry)
+	return entry
 }
 
 func RepoDestroyEntry(id string) error {

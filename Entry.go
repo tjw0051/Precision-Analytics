@@ -21,6 +21,7 @@ type Entry struct {
 	// Unique Log Entry ID
 	Id			string		`json:"id"`
 	// Web, Android, iOS, Windows, MacOS
+	// or comma-seperated list for multiple
 	Platform	string		`json:"platform"`
 	// App Namespace e.g. com.hypnosstudios.carkit
 	Namespace	string		`json:"namespace"`

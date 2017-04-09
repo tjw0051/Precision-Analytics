@@ -68,9 +68,17 @@ func LogEntry(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 	}
-
-
+	// Add date of receival
 	entry.Date = time.Now()
+
+	// Validate token & entry
+	if valid, err := ValidateEntry(entry); !valid {
+		w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+		w.WriteHeader(401)
+		panic(err)
+	}
+
+	// Submit to DB
 	t := RepoCreateEntry(entry)
 	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 	w.WriteHeader(http.StatusCreated)
@@ -115,8 +123,7 @@ func ReqAuth(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(200)
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		panic(err)
-	}	
-
+	}
 }
 /*	ERROR: Initialization loop (routes-handlers-routes)
 func Help(w http.ResponseWriter, r *http.Request) {

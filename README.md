@@ -80,5 +80,24 @@ Many API requests are prepended with a version. This ensures when a user perform
 `/[version]/log`
 
 
+### Testing with Curl
+
+#### Get Auth
+
+`curl -H "Content-Type: application/json" -d '{"apiKey":"61529673-6c86-4f54-9bdd-838bf12360a6", "userId":"johnsmith"}' http://localhost:8080/v1/auth`
+
+Reply:
+
+```javascript
+{
+	"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXQiOjE0OTE3NzE2MDMsInVzZXJJZCI6InRvbXdhbGtlciJ9.CKtokhQrJtPmvtOI4w7EFFZOYhFgKJ7f0_dVyGJrscM"
+}
+```
+
+#### Log with Auth
+
+curl -H "Content-Type: application/json" -d '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXQiOjE0OTE3NzE2MDMsInVzZXJJZCI6InRvbXdhbGtlciJ9.CKtokhQrJtPmvtOI4w7EFFZOYhFgKJ7f0_dVyGJrscM","id":"0000000004","platform":"web","namespace":"test","userId":"testUser","sessionId":"testSession","date":"0001-01-01T00:00:00Z","msgType":"testType","msg":[{"key":"testKey", "type":"string", "value":"testval"}]}' http://localhost:8080/v1/log
+
+
 
 
