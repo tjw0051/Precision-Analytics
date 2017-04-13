@@ -2,14 +2,17 @@ package main
 
 import(
 	"strings"
+
+	"Precision-Analytics/auth"
+	"Precision-Analytics/data"
 )
 
 
-func ValidateEntry(entry Entry) (bool, error) {
+func ValidateEntry(entry data.Entry) (bool, error) {
 
 	if(RequiresAuth(entry)) {
 		// Check token is valid
-		if valid, err := ValidateToken(entry.Token); !valid {
+		if valid, err := auth.ValidateToken(entry.Token); !valid {
 			return valid, err
 		}
 	}
@@ -31,6 +34,6 @@ func ValidateEntry(entry Entry) (bool, error) {
 
 // Placeholder func
 // TODO: Read from prefs, allow/disallow non-auth entries
-func RequiresAuth(entry Entry) bool {
+func RequiresAuth(entry data.Entry) bool {
 	return true
 }

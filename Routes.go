@@ -14,43 +14,28 @@ type Route struct {
 type Routes []Route
 
 var routes = Routes{
+	// Index of the API - Could serve static page from here
 	Route{
 		"Index",
 		"GET",
 		"/",
 		Index,
 	},
-	/*
-	Route{
-		"Help",
-		"GET",
-		"/help",
-		Help,
-	}, */
+	// Index of the API version
 	Route{
 		"VerIndex",
 		"GET",
 		"/" + Version,
-		VerIndex,
+		VersionIndex,
 	},
-	Route{
-		"LogIndex",
-		"GET",
-		"/" + Version + "/get",
-		LogIndex,
-	},
-	Route{
-		"LogShow",
-		"GET",
-		"/" + Version + "/get/{logId}",
-		LogShow,
-	},
+	// Log an analytics message
 	Route{
 		"Log",
 		"POST",
 		"/" + Version + "/log",
 		LogEntry,
 	},
+	// Request an auth token
 	Route{
 		"ReqAuth",
 		"POST",
