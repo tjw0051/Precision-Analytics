@@ -2,30 +2,92 @@ package main
 
 import(
 	//"fmt"
+	"log"
 
-	//"gopkg.in/mgo.v2"
-    //"gopkg.in/mgo.v2/bson"
+	"github.com/nu7hatch/gouuid"
+	"database/sql"
+	_ "github.com/mattn/go-sqlite3"
 )
-/*
-func ConnectDB() {
-	session, err := mgo.Dial("server1.example.com,server2.example.com")
-    if err != nil {
-            panic(err)
+
+func init() {
+	entries := []EntryMsg { EntryMsg{Key: "1", Type: "t1", Value: "v1"},
+	 							EntryMsg{Key: "2", Type: "t2", Value: "v2"} }
+
+	AddDB(Entry{Id: "0000000002", Msg: entries})
+}
+
+func CreateDB() {
+	log.Printf("Creating Database: PA.db")
+	db, err := sql.Open("sqlite3", "./PA.db")
+	checkErr(err)
+	defer db.Close()
+
+	sqlStmt := `
+	create table log (
+		id text not null,
+		platform text,
+		namespace text,
+		version text,
+		userId text,
+		sessionId text,
+		date timestamp,
+		msgType text,
+		key text,
+		type text,
+		value text);
+	delete from log;
+	`
+	log.Printf("Creating Table: log")
+	_, err = db.Exec(sqlStmt)
+	if err != nil {
+		log.Printf("%q: %s\n", err, sqlStmt)
+		return
+	}
+}
+
+func AddDB(entry Entry) {
+
+	id, err := uuid.NewV4()
+	checkErr(err)
+	entry.Id = id.String()
+
+	db, err := sql.Open("sqlite3", "./PA.db")
+	checkErr(err)
+
+	stmt, err := db.Prepare("INSERT INTO log(id, platform, namespace, version, userId, sessionId, date, msgType, key, type, value) values(?,?,?,?,?,?,?,?,?,?,?)")
+    checkErr(err)
+
+    // TODO: Split up entry into seperate entries
+
+    for i := 0; i < len(entry.Msg); i++ {
+    	_, err = stmt.Exec(entry.Id, 
+    	entry.Platform, 
+    	entry.Namespace, 
+    	entry.Version, 
+    	entry.UserId,
+    	entry.SessionId,
+    	entry.Date,
+    	entry.MsgType,
+    	entry.Msg[i].Key,
+    	entry.Msg[i].Type,
+    	entry.Msg[i].Value)
+    	checkErr(err)
     }
+    db.Close()
+}
 
-    // Optional. Switch the session to a monotonic behavior.
-    session.SetMode(mgo.Monotonic, true)
+// Get(id) - Find all with ID, construct Entry and return
 
-    c := session.DB("test").C("people")
-    err = c.Insert(&Person{"Ale", "+55 53 8116 9639"},
-	               &Person{"Cla", "+55 53 8402 8510"})
+// Get(query) - Run SQL query and return results
+
+// Get(id, platform, namespace, version, userId, sessionId, date, msgType)
+// - Use filters to return all matching values
+// - TODO: API pagination with tokens (like Google's API)
+
+func checkErr(err error) {
     if err != nil {
-            log.Fatal(err)
+        panic(err)
     }
 }
 
-func log(entry Entry) {
 
-}
-
-*/

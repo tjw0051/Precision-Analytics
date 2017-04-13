@@ -41,6 +41,7 @@ func LogShow(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+/*	Log message on server (requires token from ReqAuth first)	*/
 func LogEntry(w http.ResponseWriter, r *http.Request) {
 	var entry Entry
 	// Limit upload size to prevent malicious attacks
@@ -51,20 +52,12 @@ func LogEntry(w http.ResponseWriter, r *http.Request) {
 	if err := r.Body.Close(); err != nil {
 		panic(err)
 	}
-	/*
-	if err := json.Unmarshal(body, &entry); err != nil { // error unserializing
-		w.Header().Set("Content-Type", "application/json;charset=UTF-8")
-		w.WriteHeader(422)
-		if err := json.NewEncoder(w).Encode(err); err != nil {
-			panic(err)
-		}
-	}
-	*/
 
 	if err := json.Unmarshal([]byte(body), &entry); err != nil {
 		w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 		w.WriteHeader(422)
-		if err := json.NewEncoder(w).Encode(err); err != nil {
+		reply := GetError("msgFormat", "jsonInvalid", "JSON could not be parsed.", "422")
+		if err := json.NewEncoder(w).Encode(reply); err != nil {
 			panic(err)
 		}
 	}
@@ -72,21 +65,30 @@ func LogEntry(w http.ResponseWriter, r *http.Request) {
 	entry.Date = time.Now()
 
 	// Validate token & entry
-	if valid, err := ValidateEntry(entry); !valid {
+	if valid, _ := ValidateEntry(entry); !valid {
 		w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 		w.WriteHeader(401)
-		panic(err)
+		reply := GetError("auth", "tokenInvalid", "API Token was invalid", "401")
+		if err := json.NewEncoder(w).Encode(reply); err != nil {
+			panic(err)
+		}
 	}
 
 	// Submit to DB
-	t := RepoCreateEntry(entry)
-	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
-	w.WriteHeader(http.StatusCreated)
+	AddDB(entry)
+
+	// Should reply if successful?
+
+	//w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	//w.WriteHeader(http.StatusCreated)
+	//fmt.Fprintln(w, "Added to DB")
+	/*
 	if err := json.NewEncoder(w).Encode(t); err != nil {
 		panic(err)
 	}
+	*/
 }
-
+/* Submit API Key to receive an Auth Token */
 func ReqAuth(w http.ResponseWriter, r *http.Request) {
 	var authReq AuthReq
 	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
@@ -100,7 +102,8 @@ func ReqAuth(w http.ResponseWriter, r *http.Request) {
 	if err := json.Unmarshal([]byte(body), &authReq); err != nil {
 		w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 		w.WriteHeader(422)
-		if err := json.NewEncoder(w).Encode(err); err != nil {
+		reply := GetError("msgFormat", "jsonInvalid", "JSON could not be parsed.", "422")
+		if err := json.NewEncoder(w).Encode(reply); err != nil {
 			panic(err)
 		}
 	}
@@ -108,7 +111,10 @@ func ReqAuth(w http.ResponseWriter, r *http.Request) {
 	if(ValidateApiKey(authReq.ApiKey) == false) {
 		w.Header().Set("Content-Type", "application/json;charset=UTF-8")
 		w.WriteHeader(401)
-		panic("Invalid API Key")
+		reply := GetError("auth", "keyInvalid", "API Key was invalid", "401")
+		if err := json.NewEncoder(w).Encode(reply); err != nil {
+			panic(err)
+		}
 	}
 	// Generate Token
 	var response AuthResponse
@@ -125,18 +131,6 @@ func ReqAuth(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 }
-/*	ERROR: Initialization loop (routes-handlers-routes)
-func Help(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/text;charset=UTF-8")
-	w.WriteHeader(http.StatusOK)
-
-	fmt.Fprintln(w, "Current API routes for latest version(%s): ", Version)
-	var routeCpy := routes
-	for _, route := range routeCpy {
-		fmt.Fprintln(w, "%s - %s - %s", route.Name, route.Method, route.Pattern)
-	}
-}
-*/
 
 
 

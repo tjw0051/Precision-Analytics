@@ -25,10 +25,12 @@ type Entry struct {
 	Platform	string		`json:"platform"`
 	// App Namespace e.g. com.hypnosstudios.carkit
 	Namespace	string		`json:"namespace"`
+	// App Version
+	Version 	string 		`json:"version"`
 	// Unique User ID
-	userId		string		`json:"userId"`
+	UserId		string		`json:"userId"`
 	// Unique Session ID
-	sessionId	string		`json:"sessionId"`
+	SessionId	string		`json:"sessionId"`
 	// Date Entry was received
 	Date		time.Time 	`json:"date"`
 	// Categorises this set of entry data

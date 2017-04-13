@@ -90,13 +90,13 @@ Reply:
 
 ```javascript
 {
-	"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXQiOjE0OTE3NzE2MDMsInVzZXJJZCI6InRvbXdhbGtlciJ9.CKtokhQrJtPmvtOI4w7EFFZOYhFgKJ7f0_dVyGJrscM"
+	"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ0b213YWxrZXIiLCJpc3MiOiJwcmVjaXNpb24tYW5hbHl0aWNzIn0.ipEkn7bHv53h72R-KBhErlQtLyThsYfbP6dz41tLiuM"
 }
 ```
 
 #### Log with Auth
 
-curl -H "Content-Type: application/json" -d '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJkYXQiOjE0OTE3NzE2MDMsInVzZXJJZCI6InRvbXdhbGtlciJ9.CKtokhQrJtPmvtOI4w7EFFZOYhFgKJ7f0_dVyGJrscM","id":"0000000004","platform":"web","namespace":"test","userId":"testUser","sessionId":"testSession","date":"0001-01-01T00:00:00Z","msgType":"testType","msg":[{"key":"testKey", "type":"string", "value":"testval"}]}' http://localhost:8080/v1/log
+curl -H "Content-Type: application/json" -d '{"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJqb2huc21pdGgiLCJleHAiOjE0OTIxMDU1ODYsImlhdCI6MTQ5MjEwMTk4NiwiaXNzIjoicHJlY2lzaW9uIiwibmJmIjoxNDkyMTAxOTg2fQ.hwbhzsZxnGsKtSGnLzrmefQ6w7-H03CUXHGBqL7pVNE","id":"0000000004","platform":"web","namespace":"test","version":"1.0.0","userId":"testUser","sessionId":"testSession","date":"0001-01-01T00:00:00Z","msgType":"testType","msg":[{"key":"testKey", "type":"string", "value":"testval"},{"key":"testKey2", "type":"string", "value":"testval2"}]}' http://localhost:8080/v1/log
 
 
 

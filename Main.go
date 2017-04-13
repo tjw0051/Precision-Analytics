@@ -13,6 +13,8 @@ var Version = "v1"
 func main() {
 	router := NewRouter()
 
+	log.Printf("Precision API starting...")
+	//CreateDB()
 	log.Fatal(http.ListenAndServe(":8080", router))
-	log.Printf("Precision API started...")
+	
 }

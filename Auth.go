@@ -51,6 +51,7 @@ func getToken(id string) (string, error) {
 	return tokenString, nil
 }
 
+// TODO: check keys in DB - errors for expired, deactive, limit-reached, not found, etc.
 func ValidateApiKey(key string) bool {
 	if(key == apiKey) {
 		return true
@@ -59,27 +60,25 @@ func ValidateApiKey(key string) bool {
 	}
 }
 
-//TODO: Implement
 func ValidateToken(tokenString string) (bool, error) {
 	log.Printf("Validating token: %s", tokenString)
 
-	//at(time.Unix(0, 0), func() {
-		token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-			secret := []byte(tokenSecret)
-		    // Don't forget to validate the alg is what you expect:
-		    if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		        return false, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		    }
-		    return secret, nil
-		})
+	token, err := jwt.ParseWithClaims(tokenString, &CustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		secret := []byte(tokenSecret)
+	    // Don't forget to validate the alg is what you expect:
+	    if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+	        return false, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+	    }
+	    return secret, nil
+	})
 
-		log.Printf("Finished parse...")
-		if claims, ok := token.Claims.(*CustomClaims); ok && token.Valid {
-			log.Printf("Token OK")
-			return false, fmt.Errorf("Invalid issuer on token claims")
-		} else {
-			return false, err
-		}
-	//})
+	log.Printf("Finished parse...")
+	if _, ok := token.Claims.(*CustomClaims); ok && token.Valid {
+		log.Printf("Token OK")
+		return true, nil
+		//return false, fmt.Errorf("Invalid issuer on token claims")
+	} else {
+		return false, err
+	}
 }
 
