@@ -7,16 +7,19 @@ import (
 	"io"
 	"io/ioutil"
 	"time"
+	"log"
 
 	"Precision-Analytics/auth"
 	"Precision-Analytics/db"
 	"Precision-Analytics/data"
 )
 
+// API Index
 func Index(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Precision Analytics API \n\nHere be dragons...")
 }
 
+// Index for API Version
 func VersionIndex(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintln(w, "Precision Analytics API \n\nVersion: " + Version)
 }
@@ -75,6 +78,36 @@ func ReqAuth(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(response)
 	CheckErr(err)
 }
+
+/*	API Key Management	*/
+
+func GetKeys(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Not Implemented!")
+}
+
+func SetKeys(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Not Implemented!")
+}
+
+func RemoveKeys(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Not Implemented!")
+}
+
+/*	Group Management	*/
+
+func GetGroups(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Not Implemented!")
+}
+
+func SetGroups(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Not Implemented!")
+}
+
+func RemoveGroups(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Not Implemented!")
+}
+
+
 
 // Send JSON error to w
 func SendErr(w http.ResponseWriter, err data.ErrorItem) {

@@ -42,6 +42,54 @@ var routes = Routes{
 		"/" + Version + "/auth",
 		ReqAuth,
 	},
+
+	/****	API Key Management	****/
+
+	// List API Keys
+	Route{
+		"ShowKeys",
+		"POST",
+		"/" + Version + "/key/get",
+		GetKeys,
+	},
+	// Create/Modify API group Key
+	Route{
+		"SetKey",
+		"POST",
+		"/" + Version + "/key/set",
+		SetKeys,
+	},
+	// Create API group Key
+	Route{
+		"RemoveKey",
+		"POST",
+		"/" + Version + "/key/remove",
+		RemoveKeys,
+	},
+
+	/****	Group Management	****/
+
+	// List groups
+	Route{
+		"ShowGroups",
+		"POST",
+		"/" + Version + "/group/get",
+		GetGroups,
+	},
+	// Create/Modify group
+	Route{
+		"SetGroups",
+		"POST",
+		"/" + Version + "/group/set",
+		SetGroups,
+	},
+	// Remove group
+	Route{
+		"RemoveGroup",
+		"POST",
+		"/" + Version + "/group/remove",
+		RemoveGroups,
+	},
 }
 
 

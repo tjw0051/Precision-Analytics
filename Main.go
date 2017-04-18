@@ -15,6 +15,5 @@ func main() {
 
 	log.Printf("Precision API starting...")
 	//CreateDB()
-	log.Fatal(http.ListenAndServe(":8080", router))
-	
+	log.Fatal(http.ListenAndServe(":8080", router))	
 }
