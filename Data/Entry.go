@@ -39,4 +39,8 @@ type Entry struct {
 	Msg 		[]EntryMsg	`json:"msg"`
 }
 
-type Entries []Entry
+type Entries struct {
+	Entries 	[]Entry 	`json:"entries"`
+}
+
+//type Entries []Entry

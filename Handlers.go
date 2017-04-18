@@ -47,7 +47,7 @@ func LogEntry(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Submit to DB
-	db.Add(entry)
+	db.SetLog(entry)
 
 	// Should reply if successful?
 }

@@ -20,7 +20,7 @@ func init() {
 	data.LoadConfig("pa.config")
 	Create()
 
-	Add(data.Entry{Id: "0000000002", Msg: entries})
+	SetLog(data.Entry{Id: "0000000002", Msg: entries})
 }
 
 /*******************************************************
@@ -148,7 +148,7 @@ func Create() {
 
 }
 
-func Add(entry data.Entry) {
+func SetLog(entry data.Entry) {
 
 	id, err := uuid.NewV4()
 	checkErr(err)
@@ -156,9 +156,14 @@ func Add(entry data.Entry) {
 
 	db, err := sql.Open("sqlite3", "./PA.db")
 	checkErr(err)
+	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO log(id, platform, namespace, version, userId, sessionId, date, msgType, key, type, value) values(?,?,?,?,?,?,?,?,?,?,?)")
+	tx, err := db.Begin()
+	checkErr(err)
+
+	stmt, err := tx.Prepare("INSERT INTO log(id, platform, namespace, version, userId, sessionId, date, msgType, key, type, value) values(?,?,?,?,?,?,?,?,?,?,?)")
     checkErr(err)
+    defer stmt.Close()
 
     // TODO: Split up entry into seperate entries
 
@@ -176,19 +181,77 @@ func Add(entry data.Entry) {
     	entry.Msg[i].Value)
     	checkErr(err)
     }
-    db.Close()
+    tx.Commit()
 }
 
-func GetGroups() {
-	log.Printf("Not Implemented!")
+func GetLog() data.Entries {
+	db, err := sql.Open("sqlite3", "./PA.db")
+	checkErr(err)
+	defer db.Close()
+
+	rows, err := db.Query("select id, platform, namespace, version, userId, sessionId, date, msgType, key, type, value from log order by id asc")
+	checkErr(err)
+	defer rows.Close()
+
+	entries := data.Entries{}
+
+	for rows.Next() {
+		e := data.Entry{Msg: []data.EntryMsg { data.EntryMsg{}} }
+		err = rows.Scan(&e.Id, &e.Platform, &e.Namespace, &e.Version, &e.UserId, &e.SessionId, &e.Date, &e.MsgType, &e.Msg[0].Key, &e.Msg[0].Type, &e.Msg[0].Value)
+		if(len(entries.Entries) > 0) {
+			if(entries.Entries[0].Id == e.Id) {
+				entries.Entries[0].Msg = append(entries.Entries[0].Msg, e.Msg[0])
+			} else {
+				entries.Entries = append(entries.Entries, e)
+			}
+		}
+	}
+	err = rows.Err()
+	checkErr(err)
+
+	return entries
+}
+
+func GetGroups() data.Groups {
+	db, err := sql.Open("sqlite3", "./PA.db")
+	checkErr(err)
+	defer db.Close()
+
+	rows, err := db.Query("select name, manageGroups, manageServer, createKey, addLog, queryLog, modLog from accessgroups")
+	checkErr(err)
+	defer rows.Close()
+
+	groups := data.Groups{}
+
+	for rows.Next() {
+		newGroup := data.Group{}
+		err = rows.Scan(&newGroup.Name,
+			&newGroup.ManageGroups,
+			&newGroup.ManageServer,
+			&newGroup.CreateKey,
+			&newGroup.AddLog,
+			&newGroup.QueryLog,
+			&newGroup.ModLog)
+		checkErr(err)
+		groups.Groups = append(groups.Groups, newGroup)
+	}
+	err = rows.Err()
+	checkErr(err)
+	return groups
 }
 
 func SetGroups(groups data.Groups) {
+	//TODO: Check if group exists -  if it does, overwrite
 	db, err := sql.Open("sqlite3", "./PA.db")
 	checkErr(err)
+	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO accessgroups(name, manageGroups, manageServer, createKey, addLog, queryLog, modLog) values(?,?,?,?,?,?,?)")
+	tx, err := db.Begin()
 	checkErr(err)
+
+	stmt, err := tx.Prepare("INSERT INTO accessgroups(name, manageGroups, manageServer, createKey, addLog, queryLog, modLog) values(?,?,?,?,?,?,?)")
+	checkErr(err)
+	defer stmt.Close()
 
 	for i := 0; i < len(groups.Groups); i++ {
 		_, err = stmt.Exec(groups.Groups[i].Name,
@@ -200,25 +263,68 @@ func SetGroups(groups data.Groups) {
 			groups.Groups[i].ModLog)
 		checkErr(err)
 	}
-	db.Close()
+	tx.Commit()
 }
 
-func RemoveGroups(name string) {
-	log.Printf("Not Implemented!")
+func RemoveGroups(names []string) {
+	db, err := sql.Open("sqlite3", "./PA.db")
+	checkErr(err)
+	defer db.Close()
+
+	tx, err := db.Begin()
+	checkErr(err)
+
+	stmt, err := tx.Prepare("delete from accessgroups where name = ?")
+	checkErr(err)
+	defer stmt.Close()
+
+	for i := 0; i < len(names); i++ {
+		_, err := stmt.Exec(names[i])
+		checkErr(err)
+	}
 
 	//TODO: Revoke keys tied to group
 }
 
-func GetKeys() {
-	log.Printf("Not Implemented!")
+func GetKeys() data.Keys {
+	db, err := sql.Open("sqlite3", "./PA.db")
+	checkErr(err)
+	defer db.Close()
+
+	rows, err := db.Query("select key, expires, expDate, active, accessGroup from apikeys")
+	checkErr(err)
+	defer rows.Close()
+
+	keys := data.Keys{}
+
+	for rows.Next() {
+		newKey := data.Key{}
+		err = rows.Scan(&newKey.Key,
+						 &newKey.Expires,
+						 &newKey.ExpDate,
+						 &newKey.Active,
+						 &newKey.Group)
+		checkErr(err)
+		keys.Keys = append(keys.Keys, newKey)
+	}
+	err = rows.Err()
+	checkErr(err)
+
+	return keys
 }
 
 func SetKeys(keys data.Keys) {
+	// TODO: Check if key exists. If it does, overwrite
 	db, err := sql.Open("sqlite3", "./PA.db")
 	checkErr(err)
+	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO apikeys(key, expires, expDate, active, accessGroup) values(?,?,?,?,?)")
+	tx, err := db.Begin()
 	checkErr(err)
+
+	stmt, err := tx.Prepare("INSERT INTO apikeys(key, expires, expDate, active, accessGroup) values(?,?,?,?,?)")
+	checkErr(err)
+	defer stmt.Close()
 
 	for i := 0; i < len(keys.Keys); i++ {
 		_, err = stmt.Exec(keys.Keys[i].Key,
@@ -228,11 +334,25 @@ func SetKeys(keys data.Keys) {
 			keys.Keys[i].Group)
 		checkErr(err)
 	}
-	db.Close()
+	tx.Commit()
 }
 
-func RemoveKeys() {
-	log.Printf("Not Implemented!")
+func RemoveKeys(keys []string) {
+	db, err := sql.Open("sqlite3", "./PA.db")
+	checkErr(err)
+	defer db.Close()
+
+	tx, err := db.Begin()
+	checkErr(err)
+
+	stmt, err := tx.Prepare("delete from apikeys where key = ?")
+	checkErr(err)
+	defer stmt.Close()
+
+	for i := 0; i < len(keys); i++ {
+		_, err := stmt.Exec(keys[i])
+		checkErr(err)
+	}
 }
 
 // Get(id) - Find all with ID, construct Entry and return
