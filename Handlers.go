@@ -9,9 +9,8 @@ import (
 	"time"
 	"log"
 
-	"Precision-Analytics/auth"
-	"Precision-Analytics/db"
-	"Precision-Analytics/data"
+	"precision-analytics/auth"
+	"precision-analytics/data"
 )
 
 // API Index
@@ -27,13 +26,7 @@ func VersionIndex(w http.ResponseWriter, r *http.Request) {
 /*	Log message on server (requires token from ReqAuth first)	*/
 func LogEntry(w http.ResponseWriter, r *http.Request) {
 	var entry data.Entry
-	// Limit upload size to prevent malicious attacks
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
-	if err != nil  { // Read error
-		panic(err)
-	}
-	err = r.Body.Close()
-	CheckErr(err)
+	body := Read(w, r)
 
 	if err := json.Unmarshal([]byte(body), &entry); err != nil {
 		SendErr(w, data.Errors["msgFormat"])
@@ -42,33 +35,29 @@ func LogEntry(w http.ResponseWriter, r *http.Request) {
 	entry.Date = time.Now()
 
 	// Validate token & entry
+	/*
 	if valid, _ := ValidateEntry(entry); !valid {
 		SendErr(w, data.Errors["tokenInvalid"])
 	}
+	*/
 
 	// Submit to DB
-	db.SetLog(entry)
+	data.SetLog(entry)
 
 	// Should reply if successful?
 }
 /* Submit API Key to receive an Auth Token */
 func ReqAuth(w http.ResponseWriter, r *http.Request) {
 	var authReq auth.AuthReq
-	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
-	CheckErr(err)
-	err = r.Body.Close()
-	CheckErr(err)
+	body := Read(w, r)
 
 	if err := json.Unmarshal([]byte(body), &authReq); err != nil {
 		SendErr(w, data.Errors["jsonInvalid"])
 	}
-	// Validate API Key
-	if(auth.ValidateApiKey(authReq.ApiKey) == false) {
-		SendErr(w, data.Errors["keyInvalid"])
-	}
 	// Generate Token
 	var response auth.AuthResponse
-	response.Token, err = auth.GetToken(authReq.UserId)
+	var err error
+	response.Token, err = auth.GetToken(authReq.UserId, authReq.ApiKey)
 	if err != nil {
 		SendErr(w, data.Errors["tokenErr"])
 	}
@@ -82,11 +71,40 @@ func ReqAuth(w http.ResponseWriter, r *http.Request) {
 /*	API Key Management	*/
 
 func GetKeys(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Not Implemented!")
+	var getMsg data.GetMsg
+	body := Read(w, r)
+
+	if err := json.Unmarshal([]byte(body), &getMsg); err != nil {
+		SendErr(w, data.Errors["msgFormat"])
+	}
+
+	// Validate token & entry
+	/*
+	if valid, _ := auth.ValidateToken(getMsg.Token); !valid {
+		SendErr(w, data.Errors["tokenInvalid"])
+	}
+	*/
+
+	keys := data.GetKeys()
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.WriteHeader(200)
+	encErr := json.NewEncoder(w).Encode(keys)
+	CheckErr(encErr)
 }
 
 func SetKeys(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Not Implemented!")
+	var keys data.Keys
+	body := Read(w, r)
+
+	if err := json.Unmarshal([]byte(body), &keys); err != nil {
+		SendErr(w, data.Errors["msgFormat"])
+	}
+
+	// TODO: Check Token in header has auth for this func
+
+	data.SetKeys(keys)
+	
+	// TODO: Respond
 }
 
 func RemoveKeys(w http.ResponseWriter, r *http.Request) {
@@ -96,18 +114,65 @@ func RemoveKeys(w http.ResponseWriter, r *http.Request) {
 /*	Group Management	*/
 
 func GetGroups(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Not Implemented!")
+	var getMsg data.GetMsg
+	body := Read(w, r)
+
+	if err := json.Unmarshal([]byte(body), &getMsg); err != nil {
+		SendErr(w, data.Errors["msgFormat"])
+	}
+
+	// Validate token & entry
+	/*
+	if valid, _ := auth.ValidateToken(getMsg.Token); !valid {
+		SendErr(w, data.Errors["tokenInvalid"])
+	}
+	*/
+
+	groups := data.GetGroups()
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.WriteHeader(200)
+	encErr := json.NewEncoder(w).Encode(groups)
+	CheckErr(encErr)
 }
 
 func SetGroups(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Not Implemented!")
+	var groups data.Groups
+	body := Read(w, r)
+
+	if err := json.Unmarshal([]byte(body), &groups); err != nil {
+		SendErr(w, data.Errors["msgFormat"])
+	}
+
+	// TODO: Check Token in header has auth for this func
+
+	data.SetGroups(groups)
+	
+	// TODO: Respond
 }
 
 func RemoveGroups(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Not Implemented!")
 }
 
+/* 		Utils 		*/
 
+func Read(w http.ResponseWriter, r *http.Request) []byte {
+	// Limit upload size to prevent malicious attacks
+	body, err := ioutil.ReadAll(io.LimitReader(r.Body, 1048576))
+	if err != nil  { // Read error
+		panic(err)
+	}
+	err = r.Body.Close()
+	CheckErr(err)
+	return body
+}
+
+// TODO: use builtin jwt middleware tools
+/*
+func ReadAuth(r *http.Request) {
+	authKey := r.Header.Get("Authorization")
+}
+*/
 
 // Send JSON error to w
 func SendErr(w http.ResponseWriter, err data.ErrorItem) {

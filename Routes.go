@@ -5,9 +5,10 @@ import (
 )
 
 type Route struct {
-	Name		string
-	Method		string
-	Pattern		string
+	Name			string
+	Method			string
+	Pattern			string
+	RequiresAuth	bool
 	HandlerFunc	http.HandlerFunc
 }
 
@@ -19,6 +20,7 @@ var routes = Routes{
 		"Index",
 		"GET",
 		"/",
+		false,
 		Index,
 	},
 	// Index of the API version
@@ -26,6 +28,7 @@ var routes = Routes{
 		"VerIndex",
 		"GET",
 		"/" + Version,
+		false,
 		VersionIndex,
 	},
 	// Log an analytics message
@@ -33,6 +36,7 @@ var routes = Routes{
 		"Log",
 		"POST",
 		"/" + Version + "/log",
+		true,
 		LogEntry,
 	},
 	// Request an auth token
@@ -40,6 +44,7 @@ var routes = Routes{
 		"ReqAuth",
 		"POST",
 		"/" + Version + "/auth",
+		false,
 		ReqAuth,
 	},
 
@@ -48,22 +53,25 @@ var routes = Routes{
 	// List API Keys
 	Route{
 		"ShowKeys",
-		"POST",
+		"GET",
 		"/" + Version + "/key/get",
+		true,
 		GetKeys,
 	},
 	// Create/Modify API group Key
 	Route{
-		"SetKey",
+		"SetKeys",
 		"POST",
 		"/" + Version + "/key/set",
+		true,
 		SetKeys,
 	},
 	// Create API group Key
 	Route{
-		"RemoveKey",
+		"RemoveKeys",
 		"POST",
 		"/" + Version + "/key/remove",
+		true,
 		RemoveKeys,
 	},
 
@@ -72,8 +80,9 @@ var routes = Routes{
 	// List groups
 	Route{
 		"ShowGroups",
-		"POST",
+		"GET",
 		"/" + Version + "/group/get",
+		true,
 		GetGroups,
 	},
 	// Create/Modify group
@@ -81,13 +90,15 @@ var routes = Routes{
 		"SetGroups",
 		"POST",
 		"/" + Version + "/group/set",
+		true,
 		SetGroups,
 	},
 	// Remove group
 	Route{
-		"RemoveGroup",
+		"RemoveGroups",
 		"POST",
 		"/" + Version + "/group/remove",
+		true,
 		RemoveGroups,
 	},
 }

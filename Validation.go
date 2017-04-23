@@ -3,19 +3,12 @@ package main
 import(
 	"strings"
 
-	"Precision-Analytics/auth"
-	"Precision-Analytics/data"
+	"precision-analytics/data"
 )
 
 
 func ValidateEntry(entry data.Entry) (bool, error) {
 
-	if(RequiresAuth(entry)) {
-		// Check token is valid
-		if valid, err := auth.ValidateToken(entry.Token); !valid {
-			return valid, err
-		}
-	}
 	//TODO:
 	// - Validate UUIDs with regex
 	//http://stackoverflow.com/questions/136505/searching-for-uuids-in-text-with-regex

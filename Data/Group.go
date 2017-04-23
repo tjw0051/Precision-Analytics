@@ -6,10 +6,5 @@ type Groups struct {
 
 type Group struct {
 	Name 			string 		`json:"name"`
-	ManageGroups 	bool 		`json:"manageGroups"`
-	ManageServer 	bool 		`json:"manageServer"`
-	CreateKey 		bool 		`json:"createKey"`
-	AddLog 			bool 		`json:"addLog"`
-	QueryLog 		bool 		`json:"queryLog"`
-	ModLog 			bool 		`json:"modLog"`
+	Perms		 	string 		`json:"perms"`
 }
