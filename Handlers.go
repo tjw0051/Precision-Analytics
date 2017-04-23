@@ -102,9 +102,14 @@ func SetKeys(w http.ResponseWriter, r *http.Request) {
 
 	// TODO: Check Token in header has auth for this func
 
-	data.SetKeys(keys)
-	
-	// TODO: Respond
+	newKeys := data.SetKeys(keys)
+
+	w.Header().Set("Content-Type", "application/json;charset=UTF-8")
+	w.WriteHeader(200)
+	encErr := json.NewEncoder(w).Encode(newKeys)
+	CheckErr(encErr)
+
+	//TODO: SEND THE KEY BACK!!!!!!!!!!!!
 }
 
 func RemoveKeys(w http.ResponseWriter, r *http.Request) {

@@ -318,7 +318,7 @@ func GetKeys() Keys {
 	return keys
 }
 
-func SetKeys(keys Keys) {
+func SetKeys(keys Keys) Keys {
 	// TODO: Check if key exists. If it does, overwrite
 	// 		 Check if group exists
 	db, err := sql.Open("sqlite3", "./PA.db")
@@ -333,6 +333,12 @@ func SetKeys(keys Keys) {
 	defer stmt.Close()
 
 	for i := 0; i < len(keys.Keys); i++ {
+		// Generate Key
+		if(keys.Keys[i].Key == "") {
+			id, err := uuid.NewV4()
+			checkErr(err)
+			keys.Keys[i].Key = id.String()
+		}
 		_, err = stmt.Exec(keys.Keys[i].Key,
 			keys.Keys[i].Expires,
 			keys.Keys[i].ExpDate,
@@ -341,6 +347,8 @@ func SetKeys(keys Keys) {
 		checkErr(err)
 	}
 	tx.Commit()
+
+	return keys
 }
 
 func RemoveKeys(keys []string) {
